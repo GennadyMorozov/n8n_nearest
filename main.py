@@ -73,7 +73,7 @@ def nearest(req: Request):
 	FROM news
 	WHERE pub_date >= %s::timestamptz - INTERVAL '30 days'
 	  AND pub_date < %s::timestamptz
- 	  AND id < %s
+ 	  AND id <> %s
  	  AND {req.simhash_column} IS NOT NULL
 	ORDER BY pub_date ASC, id ASC	
     """
