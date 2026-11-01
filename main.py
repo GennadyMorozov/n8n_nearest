@@ -6,9 +6,10 @@ from datetime import datetime, timezone
 
 app = FastAPI(title="News Nearest Neighbor")
 
+# 👈 Змінено на нові колонки з _int
 ALLOWED_COLUMNS = {
-    "rss_simhash",
-    "content_simhash"
+    "rss_simhash_int",
+    "content_simhash_int"
 }
 
 
@@ -50,8 +51,9 @@ def nearest(req: Request):
             detail="Invalid simhash column"
         )
 
+    # 👈 Тепер приймаємо десяткове число (рядок), без base=16
     try:
-        target_hash = int(req.simhash, 16)
+        target_hash = int(req.simhash)
     except Exception:
         raise HTTPException(
             status_code=400,
@@ -65,17 +67,18 @@ def nearest(req: Request):
     conn = get_connection()
     cur = conn.cursor()
 
+    # 👈 Використовуємо динамічну назву колонки (rss_simhash_int або content_simhash_int)
     sql = f"""
-	SELECT
-  	  id,
- 	   {req.simhash_column},
- 	   pub_date
-	FROM news
-	WHERE pub_date >= %s::timestamptz - INTERVAL '30 days'
-	  AND pub_date < %s::timestamptz
- 	  AND id <> %s
- 	  AND {req.simhash_column} IS NOT NULL
-	ORDER BY pub_date ASC, id ASC	
+        SELECT
+            id,
+            {req.simhash_column},
+            pub_date
+        FROM news
+        WHERE pub_date >= %s::timestamptz - INTERVAL '30 days'
+          AND pub_date < %s::timestamptz
+          AND id <> %s
+          AND {req.simhash_column} IS NOT NULL
+        ORDER BY pub_date ASC, id ASC
     """
 
     cur.execute(
@@ -94,8 +97,9 @@ def nearest(req: Request):
         if not simhash:
             continue
 
+        # 👈 Тепер конвертуємо з десяткового рядка в int, без base=16
         try:
-            candidate_hash = int(simhash, 16)
+            candidate_hash = int(simhash)
         except Exception:
             continue
 
