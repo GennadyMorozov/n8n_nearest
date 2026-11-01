@@ -74,7 +74,7 @@ def nearest(req: Request):
             {req.simhash_column},
             pub_date
         FROM news
-        WHERE pub_date >= %s::timestamptz - INTERVAL '7 days'
+        WHERE pub_date >= %s::timestamptz - INTERVAL '3 days'
           AND pub_date < %s::timestamptz
           AND id <> %s
           AND {req.simhash_column} IS NOT NULL
